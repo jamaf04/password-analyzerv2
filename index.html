@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- React Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        function PasswordAnalyzer() {
+            const [password, setPassword] = React.useState('');
+            const [generatedPassword, setGeneratedPassword] = React.useState('');
+            const [result, setResult] = React.useState(null);
+            const [copied, setCopied] = React.useState(false);
+
+            const checkPasswordStrength = (password) => {
+                if (password.length < 8) {
+                    return {
+                        message: "Weak: Password must be at least 8 characters long",
+                        isStrong: false
+                    };
+                }
+                
+                if (!/[A-Z]/.test(password)) {
+                    return {
+                        message: "Weak: Password must contain at least one uppercase letter",
+                        isStrong: false
+                    };
+                }
+                
+                if (!/[a-z]/.test(password)) {
+                    return {
+                        message: "Weak: Password must contain at least one lowercase letter",
+                        isStrong: false
+                    };
+                }
+                
+                if (!/\d/.test(password)) {
+                    return {
+                        message: "Weak: Password must contain at least one digit",
+                        isStrong: false
+                    };
+                }
+                
+                if (!/[^a-zA-Z0-9]/.test(password)) {
+                    return {
+                        message: "Weak: Password must contain at least one special character",
+                        isStrong: false
+                    };
+                }
+
+                return {
+                    message: "Strong: Your password is strong!",
+                    isStrong: true
+                };
+            };
+
+            const generateStrongPassword = () => {
+                const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+                const numbers = '0123456789';
+                const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+                
+                let newPassword = '';
+                
+                newPassword += uppercase[Math.floor(Math.random() * uppercase.length)];
+                newPassword += lowercase[Math.floor(Math.random() * lowercase.length)];
+                newPassword += numbers[Math.floor(Math.random() * numbers.length)];
+                newPassword += special[Math.floor(Math.random() * special.length)];
+                
+                const allChars = uppercase + lowercase + numbers + special;
+                for (let i = 0; i < 8; i++) {
+                    newPassword += allChars[Math.floor(Math.random() * allChars.length)];
+                }
+                
+                newPassword = newPassword.split('').sort(() => Math.random() - 0.5).join('');
+                setGeneratedPassword(newPassword);
+                setResult(checkPasswordStrength(newPassword));
+                setPassword('');
+            };
+
+            const handlePasswordChange = (e) => {
+                const newPassword = e.target.value;
+                setPassword(newPassword);
+                if (newPassword) {
+                    setResult(checkPasswordStrength(newPassword));
+                } else {
+                    setResult(null);
+                }
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(generatedPassword);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            return (
+                <div className="container">
+                    <h1>Password Strength Analyzer</h1>
+                    
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            className="password-input"
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={handlePasswordChange}
+                        />
+                    </div>
+
+                    {result && (
+                        <div className={`strength-meter ${result.isStrong ? 'strong' : 'weak'}`}>
+                            {result.message}
+                        </div>
+                    )}
+
+                    <button className="button" onClick={generateStrongPassword}>
+                        Generate Strong Password
+                    </button>
+
+                    {generatedPassword && (
+                        <div>
+                            <div className="generated-password">
+                                {generatedPassword}
+                            </div>
+                            <button className="button copy-button" onClick={copyToClipboard}>
+                                {copied ? 'Copied!' : 'Copy to Clipboard'}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="requirements">
+                        <strong>Password Requirements:</strong>
+                        <ul>
+                            <li>At least 8 characters long</li>
+                            <li>At least one uppercase letter</li>
+                            <li>At least one lowercase letter</li>
+                            <li>At least one number</li>
+                            <li>At least one special character</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PasswordAnalyzer />);
+    </script>
+</body>
+</html> 
